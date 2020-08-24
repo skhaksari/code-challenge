@@ -26,8 +26,9 @@ import math
 def printclosest(row):
     print('The closest store is at ' + row['Store Name'] + ' at' + row['Address'] + ', ' + row['City']
     + ', ' + row['State'] + ' ' + row['Zip Code'])
-def calcdist(lat1, long1, lat2, long2):
+def calcdist(lat1, long1, lat2, long2): #based on the Havesine formula implementation found on this blog: https://janakiev.com/blog/gps-points-distance-python/
   R = 6372800
+  lat2, long2 = float(lat2), float(long2)
   phi1, phi2 = math.radians(lat1), math.radians(lat2)
   dphi = math.radians(lat2 - lat1)
   dlambda = math.radians(long2-long1)
@@ -53,16 +54,16 @@ def addr(address):
     geolocator = Nominatim(user_agent="find_store")
     for row in reader:
       coords = geolocator.geocode(address)
-      distdict[row['Store Name']] = calcdist(coords.latitude, coords.longitude, row['Latitude'], row['longitude'])
+      distdict[row['Store Name']] = calcdist(coords.latitude, coords.longitude, row['Latitude'], row['Longitude'])
     min_value = min(distdict.values())
     min_list = [key for key, value in distdict.items() if value == min_value]
-    for row in filter(min_list[0] in row.values(), reader): 
+    for row in filter(min_list[0] in row.values(), reader):
+      print('nice') 
       printclosest(row)
       
 
 arguments = docopt(__doc__)
-print(arguments)
 if arguments['--zip'] is not None:
   zip(arguments['--zip'])
 if arguments['--address'] is not None:
-  addr(arguments['-address'])
+  addr(arguments['--address'])
