@@ -20,14 +20,15 @@ import csv
 import sys
 import pgeocode
 import math
+import json
 
 '''if __name__ == '__main__':'''
 
 def printclosest(row,output):
   if output == "json":
-    print(row)
+    print(json.dumps(row))
   else:
-    print('The closest store is at ' + row['Store Name'] + ' at' + row['Address'] + ', ' + row['City']
+    print('The closest store is at ' + row['Store Name'] + ' at ' + row['Address'] + ', ' + row['City']
     + ', ' + row['State'] + ' ' + row['Zip Code'])
 def distunits(units, dist):
   if units == 'mi':
@@ -45,35 +46,39 @@ def zip(zipcode, units, output):
   with open('store-locations.csv') as store_locations:
     reader = csv.DictReader(store_locations)
     distdict = {}
-    minrow = []
+    minrow = {}
     min_list = []
     for row in reader:
       dist = pgeocode.GeoDistance('US')
       distdict[row['Zip Code']] = dist.query_postal_code(zipcode, row['Zip Code'][0:5])
     min_value = min(distdict.values())
     min_list = [key for key, value in distdict.items() if value == min_value]
-    minrow = [row['Zip Code'] for row in reader if row['Zip Code'] == min_list[0]]
-    print(minrow)
-    print(min_list)
+    store_locations.seek(0)
+    print(min_list[0])
     for row in reader: 
       if min_list[0] == row['Zip Code']:
         minrow = row
         break
-    print(minrow)
     printclosest(minrow, output)
 
 def addr(address, units, output):
    with open('store-locations.csv') as store_locations:
     reader = csv.DictReader(store_locations)
     distdict = {}
+    minrow = {}
+    min_list = []
     geolocator = Nominatim(user_agent="find_store")
     for row in reader:
       coords = geolocator.geocode(address)
       distdict[row['Store Name']] = calcdist(coords.latitude, coords.longitude, row['Latitude'], row['Longitude'])
     min_value = min(distdict.values())
     min_list = [key for key, value in distdict.items() if value == min_value]
-    for row in filter(min_list[0] in row.values(), reader):
-      printclosest(row)
+    store_locations.seek(0)
+    for row in reader:
+      if min_list[0] == row['Store Name']:
+        minrow = row
+        break
+    printclosest(minrow, output)
       
 
 arguments = docopt(__doc__)
