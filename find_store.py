@@ -23,13 +23,16 @@ import math
 
 '''if __name__ == '__main__':'''
 
-def printzip(row):
+def printclosest(row):
     print('The closest store is at ' + row['Store Name'] + ' at' + row['Address'] + ', ' + row['City']
     + ', ' + row['State'] + ' ' + row['Zip Code'])
 def calcdist(lat1, long1, lat2, long2):
+  R = 6372800
   phi1, phi2 = math.radians(lat1), math.radians(lat2)
   dphi = math.radians(lat2 - lat1)
   dlambda = math.radians(long2-long1)
+  a = math.sin(dphi/2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
+  return 2*R*math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 def zip(zipcode):
   with open('store-locations.csv') as store_locations:
@@ -41,8 +44,7 @@ def zip(zipcode):
     min_value = min(distdict.values())
     min_list = [key for key, value in distdict.items() if value == min_value]
     for row in filter(min_list[0] in row.values(), reader): 
-      printzip(row)
-    print(min_list) 
+      printclosest(row)
 
 def addr(address):
   with open('store-locations.csv') as store_locations:
@@ -55,9 +57,7 @@ def addr(address):
     min_value = min(distdict.values())
     min_list = [key for key, value in distdict.items() if value == min_value]
     for row in filter(min_list[0] in row.values(), reader): 
-      printzip(row)
-    print(min_list) 
-
+      printclosest(row)
       
 
 arguments = docopt(__doc__)
